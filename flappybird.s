@@ -12,7 +12,7 @@
 # | DrawPrevPipePos | UpdatePipesLeft | LoadAddress | CheckCollisionWithPipes | GenNextPipe | LoopSky | shiftDifficulty
 .data
 	#Screen 
-	screenWidth: 	.word 64
+	screenWidth: 	.word 32
 	screenHeight: 	.word 64
 	displayAddress:	.word	0x10008000
 	newline: .asciiz "\n"
