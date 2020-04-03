@@ -186,11 +186,13 @@ main:
 			jal DrawBird2
 			j whileMain
 	deadMain:
+		jal DrawBye
  		jal DrawPipe
  		jal DrawGround
 		jal DrawBird
 		jal DrawBird2
 		# Show death screen
+		jal DrawBye
 	#---------------------------------------------------------
 	
 	
@@ -1030,6 +1032,92 @@ DrawPrevPipePos:
 	endDrawPrevPipePos1X:
 		la	$ra, ($a3)
 		jr	$ra
+
+##################################################################
+# DrawBye Function
+##################################################################
+# returns $v0 -> NULL
+##################################################################
+DrawBye:
+				lw 	$a1, Red 		# loads the color red in $a1
+				lw $t0, displayAddress	# $t0 stores the base address for display
+				sw     $a1, 1040($t0)
+				sw     $a1, 1296($t0)
+				sw     $a1, 1552($t0)
+				sw     $a1, 1808($t0)
+				sw     $a1, 2064($t0)
+				sw     $a1, 2320($t0)
+				sw     $a1, 2576($t0)
+				sw     $a1, 2832($t0)
+				sw     $a1, 3088($t0)
+				sw     $a1, 3344($t0)
+				sw     $a1, 3600($t0)
+				sw     $a1, 3856($t0)
+				
+				sw     $a1, 3860($t0)
+				sw     $a1, 3864($t0)
+				sw     $a1, 3868($t0)
+				sw     $a1, 3872($t0)
+				sw     $a1, 3876($t0)
+				
+				sw     $a1, 3876($t0)
+				sw     $a1, 3620($t0)
+				sw     $a1, 3364($t0)
+				sw     $a1, 3108($t0)
+				sw     $a1, 2852($t0)
+				
+				sw     $a1, 2848($t0)
+				sw     $a1, 2844($t0)
+				sw     $a1, 2840($t0)
+				sw     $a1, 2836($t0)
+				# Y #
+				sw     $a1, 2608($t0)
+				sw     $a1, 2864($t0)
+				sw     $a1, 3120($t0)
+				sw     $a1, 3376($t0)
+				sw     $a1, 3632($t0)
+				sw     $a1, 3888($t0)
+				
+				sw     $a1, 2348($t0)
+				sw     $a1, 2088($t0)
+				sw     $a1, 1828($t0)
+				sw     $a1, 1568($t0)
+				
+				
+				sw     $a1, 2356($t0)
+				sw     $a1, 2104($t0)
+				sw     $a1, 1852($t0)
+				sw     $a1, 1600($t0)
+				
+				#   E   #
+				sw     $a1, 1108($t0)
+				sw     $a1, 1112($t0) 
+				sw     $a1, 1116($t0) 
+				sw     $a1, 1120($t0)
+				sw     $a1, 1124($t0)
+				###
+				sw     $a1, 1364($t0)
+				sw     $a1, 1620($t0)
+				sw     $a1, 1876($t0)
+				sw     $a1, 2132($t0)
+				
+				sw     $a1, 2388($t0) 
+				sw     $a1, 2392($t0)
+				sw     $a1, 2396($t0)
+				sw     $a1, 2400($t0)
+				sw     $a1, 2404($t0)
+				###
+				sw     $a1, 2644($t0)
+				sw     $a1, 2900($t0)
+				sw     $a1, 3156($t0)
+				sw     $a1, 3412($t0)
+				sw     $a1, 3668($t0)
+				sw     $a1, 3924($t0) 
+				sw     $a1, 3928($t0)
+				sw     $a1, 3932($t0)
+				sw     $a1, 3936($t0)
+				sw     $a1, 3940($t0)
+				jr	   $ra
 
 ##################################################################
 # UpdatePipesLeft Function
