@@ -9,7 +9,7 @@
 # All the Helper Function:
 # | Init | CoordinateToAddress | DrawPixel | DrawBird | DrawSky | UpdateBirdArrayPos | Print  | ClearRegisters | DrawGround |
 # | UpdateFall | Pause | GetKeyPress | InitGround | CheckCollisionWithGround | KillBird | DrawBirdPrevPos | InitPipes | DrawPipe |
-# | DrawPrevPipePos | UpdatePipesLeft | LoadAddress | CheckCollisionWithPipes | GenNextPipe | LoopSky
+# | DrawPrevPipePos | UpdatePipesLeft | LoadAddress | CheckCollisionWithPipes | GenNextPipe | LoopSky | shiftDifficulty
 .data
 	#Screen 
 	screenWidth: 	.word 64
@@ -40,8 +40,13 @@
 	framesPerSecond: .word 2
 	timer: .word 0
 	skyCounter: .word 0
+	skyLoopCall: .word 40
+	pipeCounter: .word 0
+	pipeMoveCall: .word 2
+	difficultyCounter: .word 0
+	difficultyShiftCall: .word 100
 	backGroundColor: .word 0x9AFCF6
-	skyColorArray: .word 0x9AFCF6,0x9AFCF6, 0x9AFCF6,0x9AFCF6, 0xBCD2E8,0xBCD2E8, 0xBCD2E8,0xBCD2E8, 0x91BAD6,0x91BAD6, 0x91BAD6,0x91BAD6, 0x73A5C6,0x73A5C6, 0x73A5C6,0x73A5C6, 0x528AAE,0x528AAE, 0x528AAE,0x528AAE, 0x2E5984,0x2E5984, 0x2E5984,0x2E5984, 0x1E3F66,0x1E3F66, 0x1E3F66,0x1E3F66, 0x06385D,0x06385D, 0x06385D,0x06385D, 0x042442,0x042442, 0x042442,0x042442, 0x042442,0x042442, 0x042442,0x042442, 0x06385D,0x06385D, 0x06385D,0x06385D, 0x1E3F66,0x1E3F66, 0x1E3F66,0x1E3F66, 0x2E5984,0x2E5984, 0x2E5984,0x2E5984, 0x528AAE,0x528AAE, 0x528AAE,0x528AAE, 0x73A5C6,0x73A5C6, 0x73A5C6,0x73A5C6, 0x91BAD6,0x91BAD6, 0x91BAD6,0x91BAD6,0x9AFCF6,0x9AFCF6, 0x9AFCF6, 0x9AFCF6
+	skyColorArray: .word 0x9AFCF6, 0xBCD2E8, 0x91BAD6, 0x73A5C6, 0x528AAE, 0x2E5984, 0x1E3F66, 0x06385D, 0x042442, 0x042442, 0x06385D, 0x1E3F66, 0x2E5984, 0x528AAE, 0x73A5C6,0x91BAD6, 0x9AFCF6
 	
 	# Bird variables
 	#shape of the bird#
@@ -53,8 +58,9 @@
 	birdPixelCount: .word 12
 	birdBytesCount: .word 0
 	# (x, y): {(1, 0), (2, 0),..., (1, 3), (2,3)}
+	#9,13 , 10,13 , 8,14 , 9,14 , 10,14 , 11,14 , 12,14 , 8,15 , 9,15 , 10,15 , 11,15 , 12,15	
 	birdPos: .word 8,13 , 9,13 , 7,14 , 8,14 , 9,14 , 10,14 , 11,14 , 7,15 , 8,15 , 9,15 , 10,15 , 11,15
-	birdPos2: .word 3,23 , 4,23 , 2,24 , 3,24 , 4,24 , 5,24 , 6,24 , 2,25 , 3,25 , 4,25 , 5,25 , 6,25	
+	birdPos2: .word 3,23 , 4,23 , 2,24 , 3,24 , 4,24 , 5,24 , 6,24 , 2,25 , 3,25 , 4,25 , 5,25 , 6,25
 	BirdColor: .word 0xFFE945		# The color of the bird	
 	BirdColor2: .word 0xFFE945		# The color of the bird
 	birdAlive: .word 1
@@ -75,7 +81,7 @@
 	pipeArray4:		.word 0,0 , 0,0 , 0,0 , 0,0
 	pipesDistance:		.word 20
 	minTopPipeHeight:	.word 5
-	shiftDistance:		.word 3
+	shiftDistance:		.word 1
 	pipeThickness:		.word 10
 	
 .text
@@ -102,7 +108,7 @@ main:
 		lw $a0, skyCounter
 		addi $a0, $a0, 1
 		sw $a0, skyCounter
-		li $a1, 5
+		lw $a1, skyLoopCall
 		div $a0, $a1
 		mfhi $a0
 		beq $a0, 0, loopSky
@@ -113,7 +119,34 @@ main:
 			jal LoopSky
 			jal DrawSky
 		dontloop:
-		
+		lw $a0, pipeCounter
+		addi $a0, $a0, 1
+		sw $a0, pipeCounter
+		lw $a1, pipeMoveCall
+		div $a0, $a1
+		mfhi $a0
+		beq $a0, 0, movePipe
+		j dontMovePipe
+		movePipe:
+			li $a0, 0
+			sw $a0, pipeCounter
+			jal DrawPrevPipePos
+ 			jal UpdatePipesLeft
+ 			jal DrawPipe
+		dontMovePipe:
+		lw $a0, difficultyCounter
+		addi $a0, $a0, 1
+		sw $a0, difficultyCounter
+		lw $a1, difficultyShiftCall
+		div $a0, $a1
+		mfhi $a0
+		beq $a0, 0, shiftDifficulty
+		j dontShiftDifficulty
+		shiftDifficulty:
+			jal ShiftDifficulty
+			li $a0, 0
+			sw $a0, difficultyCounter
+		dontShiftDifficulty:
 		# main body of code ------
 		jal GetKeyPress		# get key press or 0 on no input
 		move 	$a0, $v0
@@ -130,31 +163,20 @@ main:
 				jal DrawBird
 				jal DrawBird2
  				jal DrawPipe
-				jal DrawPrevPipePos
- 				jal UpdatePipesLeft
- 				jal DrawPipe
  				j continue
  			updateFlap:
 				jal DrawBirdPrevPos
  				jal Flap
 				jal DrawBird
- 				jal DrawPipe
-				jal DrawPrevPipePos
- 				jal UpdatePipesLeft
- 				jal DrawPipe
  				j continue
  			updateFlap2:
 				jal DrawBirdPrevPos2
  				jal Flap2
 				jal DrawBird2
- 				jal DrawPipe
-				jal DrawPrevPipePos
- 				jal UpdatePipesLeft
- 				jal DrawPipe
  				j continue
  		continue:
  		lw	$a1, 0($t6)
- 		beq 	$a1, 0, genPipe
+ 		blt 	$a1, 0, genPipe
 		#-------------------------
 		j whileMain
 		genPipe:
@@ -1172,16 +1194,12 @@ LoopSky:
 	la	$a3, ($ra)
 	lw	$s7, timer
 	la	$a0, ($s7)
-	bgt	$s7, 268, reset
+	bgt	$s7, 64, reset
 	continueAfterReset:
 	addi	$s7, $s7, 1
 	li	$s2, 4
 	div	$s7, $s2
 	mfhi	$a0
-	div	$a0, $s2
-	mfhi	$a0
-	li	$v0, 1
-	syscall
 	beq	$a0, 0, changeSky
 	continueAfter: 
 		sw	$s7, timer
@@ -1195,6 +1213,28 @@ LoopSky:
 		li	$s7, 0
 		j 	continueAfterReset
 
+ShiftDifficulty:
+	lw	$s7, difficulty
+	la	$a0, ($s7)
+	bgt	$s7, 32, Max
+	addi	$s7, $s7, 1
+	li	$s2, 4
+	div	$s7, $s2
+	mfhi	$a0
+	beq	$a0, 0, shift
+	continueAfterShift: 
+		sw	$s7, difficulty
+		jr	$ra
+	shift:
+		lw	$a1, shiftDistance
+		addi	$a1, $a1, 1
+		sw	$a1, shiftDistance
+		lw $a0, shiftDistance
+		li $v0, 1
+		syscall
+		j 	continueAfterShift
+	Max:
+	jr	$ra
 LoadAddress:
 	lw	$t2, screenWidth
 	lw	$t3, screenHeight
